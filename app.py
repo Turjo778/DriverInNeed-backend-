@@ -551,13 +551,13 @@ def servicedata():
 
 
 
-@app.route('/deleteservicedata/<int:id>', methods=['DELETE'])
-def deleteservicedata(id):
+@app.route('/deleteservicedata/<int:cp>', methods=['DELETE'])
+def deleteservicedata(cp):
     if request.method == 'DELETE':
-        print(id)
+        print(cp)
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("DELETE  FROM service where ServiceId=? ",(id,))
+        cur.execute("DELETE  FROM service where CPhone=? ",(cp,))
 
         conn.commit()
         return jsonify("deleted")
@@ -609,7 +609,7 @@ def checkClientInService(phn):
     if request.method == 'GET':
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("SELECT  DFname, DLname, Startdate,Enddate FROM service where CPhone=?", (phn,))
+        cur.execute("SELECT  DFname, DLname, Startdate,Enddate,DPhone FROM service where CPhone=?", (phn,))
         count=cur.fetchone()
 
         conn.commit
