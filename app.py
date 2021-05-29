@@ -331,7 +331,7 @@ def getDailyDriver():
 
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        script=("SELECT Driverfname,DriverLname,DriverPhoneNo,DriverEmail,DriverLicenseNo,DriverService,DriverPhoto FROM driver WHERE (DriverService ='daily' AND DriverStatus='vacant')")
+        script=("SELECT Driverfname,DriverLname,DriverPhoneNo,DriverEmail,DriverLicenseNo,DriverService,DriverPhoto,Fare FROM driver WHERE (DriverService ='daily' AND DriverStatus='vacant')")
         cur.execute(script)
         data=cur.fetchall()
         mylist=[]
@@ -360,7 +360,7 @@ def getMonthlyDriver():
 
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        script=("SELECT Driverfname,DriverLname,DriverPhoneNo,DriverEmail,DriverLicenseNo,DriverService,DriverPhoto FROM driver WHERE (DriverService ='monthly' AND DriverStatus='vacant')")
+        script=("SELECT Driverfname,DriverLname,DriverPhoneNo,DriverEmail,DriverLicenseNo,DriverService,DriverPhoto,Fare FROM driver WHERE (DriverService ='monthly' AND DriverStatus='vacant')")
         cur.execute(script)
         data=cur.fetchall()
         mylist = []
@@ -497,7 +497,7 @@ def driverDatabyPhn(phn):
         cur = conn.cursor()
 
 
-        cur.execute("SELECT DriverFname,DriverLname,DriverAddress,DriverPhoneNo,DriverLicenseNo,DriverService  FROM driver WHERE DriverPhoneNo=? ", (phn,))
+        cur.execute("SELECT DriverFname,DriverLname,DriverAddress,DriverPhoneNo,DriverLicenseNo,DriverService,Fare  FROM driver WHERE DriverPhoneNo=? ", (phn,))
         conn.commit()
         data = cur.fetchone()
 
@@ -628,6 +628,36 @@ def checkDriverInService(phn):
 
         return jsonify(count)
 
+
+
+@app.route('/setDriversFare', methods=['PUT'])
+def setDriversFare():
+    if request.method == 'PUT':
+        conn = sql.connect("DriverInNeed")
+        cur = conn.cursor()
+        data = request.data
+        my_json = data.decode('utf8')
+        userInfo = json.loads(my_json)
+        phone = userInfo[0]
+        fare = userInfo[1]
+        val = (fare,phone)
+        script = ("UPDATE driver SET Fare=? WHERE DriverPhoneNo=?")
+        cur.execute(script, val)
+        conn.commit()
+        return jsonify("Fare Updated")
+
+
+@app.route('/getDriversFare/<int:phn>', methods=['GET'])
+def getDriversFare(phn):
+        if request.method == 'GET':
+            conn = sql.connect("DriverInNeed")
+            cur = conn.cursor()
+
+            cur.execute("SELECT Fare FROM driver WHERE DriverPhoneNo=? ",(phn,))
+            conn.commit()
+            data = cur.fetchone()
+
+            return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True)
