@@ -517,20 +517,20 @@ def ServiceData():
         service=info[0]
         startdate=info[1]
         enddate=info[2]
-        #Enter fare here
-        Cfname=info[3]
-        Clname=info[4]
-        Caddress=info[5]
-        Cphone=info[6]
-        Dfname=info[7]
-        Dlname=info[8]
-        Daddress=info[9]
-        Dphone=info[10]
-        Dlicense=info[11]
-        ServiceStatus=info[12]
-        val=(service, startdate,enddate,Cfname,Clname,Caddress,Cphone,Dfname,Dlname,Daddress,Dphone,Dlicense,ServiceStatus)
+        fare= info[3]
+        Cfname=info[4]
+        Clname=info[5]
+        Caddress=info[6]
+        Cphone=info[7]
+        Dfname=info[8]
+        Dlname=info[9]
+        Daddress=info[10]
+        Dphone=info[11]
+        Dlicense=info[12]
+        ServiceStatus=info[13]
+        val=(service, startdate,enddate,fare,Cfname,Clname,Caddress,Cphone,Dfname,Dlname,Daddress,Dphone,Dlicense,ServiceStatus)
 
-        script = ("INSERT INTO service (ServiceType, Startdate,Enddate,Fare,CFname,CLname,CAddress,CPhone,DFname,DLname,DAddress,DPhone,DLicense,ServiceStatus) VALUES (?,?,?,'0',?,?,?,?,?,?,?,?,?,?)")
+        script = ("INSERT INTO service (ServiceType, Startdate,Enddate,Fare,CFname,CLname,CAddress,CPhone,DFname,DLname,DAddress,DPhone,DLicense,ServiceStatus) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         cur.execute(script, val)
         conn.commit()
         info = cur.fetchone()
@@ -543,7 +543,7 @@ def servicedata():
     if request.method == 'GET':
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("SELECT * FROM service WHERE ServiceStatus='occupied' ")
+        cur.execute("SELECT * FROM service ")
         # WHERE ServiceStatus='occupied'
         data=cur.fetchall()
         conn.commit()
@@ -583,7 +583,7 @@ def DriverStatus():
         script=("UPDATE driver SET DriverStatus=? WHERE DriverPhoneNo=?")
         cur.execute(script, val)
         conn.commit()
-        return jsonify("status changed")
+        return jsonify("driver status changed")
 
 @app.route('/changeClientStatus', methods=['PUT'])
 def ClientStatus():
@@ -601,7 +601,7 @@ def ClientStatus():
             script = ("UPDATE client SET ClientStatus=? WHERE ClientPhoneNo=?")
             cur.execute(script, val)
             conn.commit()
-            return jsonify("status changed")
+            return jsonify("client status changed")
 
 
 @app.route('/checkClientInService/<int:phn>', methods=['GET'])
