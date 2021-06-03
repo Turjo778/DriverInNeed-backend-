@@ -92,41 +92,18 @@ def login():
         phone = userInfo['phonenumber']
         password = userInfo['password']
 
-
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur1 = conn.cursor()
-
-        # ClientFname, ClientLname, ClientPhoneNo, ClientNid, ClientAddress, ClientEmail, CarLicenseNO, ClientPassword
-        script=("SELECT pos,ClientFname, ClientLname, ClientPhoneNo, ClientNid, ClientAddress, ClientEmail, CarLicenseNO, ClientPassword FROM client WHERE  ClientPhoneNo=? AND ClientPassword=?")
-        val =(phone,password)
-        cur.execute(script,val)
-        info=cur.fetchone()
-
+        info2='None'
+        cur.execute("SELECT pos,ClientFname, ClientLname, ClientPhoneNo, ClientNid, ClientAddress, ClientEmail, CarLicenseNO, ClientPassword,ClientStatus From client WHERE ClientPhoneNo=? AND ClientPassword=? UNION SELECT pos,DriverFname, DriverLname, DriverPhoneNo, DriverNid, DriverAddress, DriverEmail, DriverLicenseNo, DriverPassword,DriverService From driver WHERE  DriverPhoneNo=? AND DriverPassword=? ",(phone,password,phone,password))
+        # cur.execute(script)
+        info = cur.fetchone()
         print(info)
-
-
-        script1 = ("SELECT pos,DriverFname, DriverLname, DriverPhoneNo, DriverNid, DriverAddress, DriverEmail, DriverLicenseNo, DriverPassword,DriverService FROM driver WHERE  DriverPhoneNo=? AND DriverPassword=?")
-        cur1.execute(script1, val)
-        info1 = cur1.fetchone()
-
-
-        if info1==None and info[0]=='client' :
-
-            print(info,"<==client")
-
-            cur.close()
-
+        if info!=None:
             return jsonify(info)
-
-        elif info==None and info1[0]=='driver' :
-
-            print(info1,"driver")
-            cur1.close()
-            return jsonify(info1)
         else:
-            return jsonify("user doesnt exist")
-
+            return jsonify(info2)
+      
 
 @app.route('/adminlogin', methods=['POST'])
 def adminlogin():
