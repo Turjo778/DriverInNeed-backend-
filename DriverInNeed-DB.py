@@ -16,7 +16,7 @@ ClientAddress TEXT NOT NULL ,
 ClientEmail TEXT NOT NULL ,
 CarlicenseNO TEXT NOT NULL ,
 ClientPassword TEXT NOT NULL,  
-ClientLocation TEXT,
+ClientRequiredService TEXT,
 ClientDestinationLocation TEXT ,
 ClientPhoto BLOB,
 ClientStatus TEXT
