@@ -47,15 +47,18 @@ DriverStatus TEXT
 )
 """
 
-tripsql="""
-CREATE TABLE trip(
-TripId INTEGER PRIMARY KEY AUTOINCREMENT,
-ClientId NUMBER NOT NULL,
-DriverId NUMBER NOT NULL,
-ServiceId NUMBER NOT NULL,
-FOREIGN KEY (ClientId) REFERENCES client (ClientId),
-FOREIGN KEY (DriverId) REFERENCES driver (DriverId),
-FOREIGN KEY (ServiceId) REFERENCES service (ServiceId)
+applysql="""
+CREATE TABLE applied(
+ApplicationId INTEGER PRIMARY KEY AUTOINCREMENT,
+CPhone NUMBER NOT NULL,
+Dphone NUMBER NOT NULL,
+DFname TEXT NOT NULL,
+DLname TEXT NOT NULL,
+DAddress TEXT NOT NULL,
+Fare NUMBER,
+DriverService TEXT
+
+
 
       
 )
@@ -66,7 +69,7 @@ CREATE TABLE service(
 ServiceId INTEGER PRIMARY KEY AUTOINCREMENT,
 ServiceType TEXT NOT NULL,
 Startdate INTEGER NOT NULL,
-Enddate INTEGER NOT NULL,
+Enddate INTEGER,
 Fare NUMBER ,
 CFname TEXT NOT NULL,
 CLname TEXT NOT NULL,
@@ -95,7 +98,7 @@ adminPassword TEXT NOT NULL
 
 cur.execute(clientsql)
 cur.execute(driversql)
-cur.execute(tripsql)
+cur.execute(applysql)
 cur.execute(servicesql)
 cur.execute(adminsql)
 

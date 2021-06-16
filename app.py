@@ -95,7 +95,7 @@ def login():
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
         info2='None'
-        cur.execute("SELECT pos,ClientFname, ClientLname, ClientPhoneNo, ClientNid, ClientAddress, ClientEmail, CarLicenseNO, ClientPassword,ClientStatus,ClientDestinationLocation From client WHERE ClientPhoneNo=? AND ClientPassword=? UNION SELECT pos,DriverFname, DriverLname, DriverPhoneNo, DriverNid, DriverAddress, DriverEmail, DriverLicenseNo, DriverPassword,DriverService,Fare From driver WHERE  DriverPhoneNo=? AND DriverPassword=? ",(phone,password,phone,password))
+        cur.execute("SELECT pos,ClientFname, ClientLname, ClientPhoneNo, ClientNid, ClientAddress, ClientEmail, CarLicenseNO, ClientPassword,ClientStatus From client WHERE ClientPhoneNo=? AND ClientPassword=? UNION SELECT pos,DriverFname, DriverLname, DriverPhoneNo, DriverNid, DriverAddress, DriverEmail, DriverLicenseNo,DriverService,Fare From driver WHERE  DriverPhoneNo=? AND DriverPassword=? ",(phone,password,phone,password))
         # cur.execute(script)
         info = cur.fetchone()
         print(info)
@@ -416,13 +416,38 @@ def updateDriverPhone():
         conn.commit()
         return jsonify('Updated')
 
+# @app.route('/getjob/<string:servicetype>',methods=['GET'])
+# def getjob(servicetype):
+#     if request.method == 'GET':
+#         print(servicetype)
+#         conn = sql.connect("DriverInNeed")
+#         cur = conn.cursor()
+#         cur.execute("SELECT ClientFname,ClientLname,ClientPhoneNo,ClientEmail,ClientPhoto,ClientAddress,CarlicenseNO FROM client WHERE (ClientStatus='vacant' AND ClientRequiredService=?) ", (servicetype,))
+#         # cur.execute(script)
+#         data = cur.fetchall()
+#         mylist = []
+#
+#         for i in range(len(data)):
+#             list4 = list(data[i])
+#
+#             data_base64 = base64.b64encode(list4[4])
+#             #
+#             base64_string = data_base64.decode('utf-8')
+#
+#             list4[4] = base64_string
+#             mylist.append(list4)
+#
+#         print(mylist)
+#
+#     return jsonify(mylist)
+
 @app.route('/getjob/<string:servicetype>',methods=['GET'])
 def getjob(servicetype):
     if request.method == 'GET':
         print(type(servicetype))
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("SELECT ClientFname,ClientLname,ClientPhoneNo,ClientEmail,ClientPhoto,ClientAddress,CarlicenseNO FROM client WHERE (ClientStatus='vacant' AND ClientRequiredService=?) ", (servicetype,))
+        cur.execute("SELECT ClientFname,ClientLname,ClientPhoneNo,ClientEmail,ClientPhoto,ClientAddress,CarlicenseNO FROM client WHERE (ClientStatus='vacant' AND ClientRequiredService=? AND ClientPhoneNo NOT IN ( SELECT CPhone FROM applied) )" , (servicetype,))
         # cur.execute(script)
         data = cur.fetchall()
         mylist = []
@@ -440,7 +465,6 @@ def getjob(servicetype):
         print(mylist)
 
     return jsonify(mylist)
-
 
 @app.route('/deleteClient/<int:phn>',methods=['DELETE'])
 def deleteClient(phn):
@@ -510,7 +534,7 @@ def ServiceData():
         my_json = data.decode('utf8')
         # print(my_json)
         info = json.loads(my_json)
-        print("==>",info)
+        print(info)
         service=info[0]
         startdate=info[1]
         enddate=info[2]
@@ -606,7 +630,7 @@ def checkClientInService(phn):
     if request.method == 'GET':
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("SELECT  DFname, DLname, Startdate,Enddate,DPhone FROM service where CPhone=?", (phn,))
+        cur.execute("SELECT  DFname, DLname, Startdate,Enddate,DPhone,Fare FROM service where CPhone=?", (phn,))
         count=cur.fetchone()
 
         conn.commit
@@ -618,7 +642,7 @@ def checkDriverInService(phn):
     if request.method == 'GET':
         conn = sql.connect("DriverInNeed")
         cur = conn.cursor()
-        cur.execute("SELECT  CFname, CLname, Startdate,Enddate,CPhone FROM service where DPhone=?", (phn,))
+        cur.execute("SELECT  CFname, CLname, Startdate,Enddate,CPhone,CAddress FROM service where DPhone=?", (phn,))
         count=cur.fetchone()
 
         conn.commit
@@ -655,6 +679,50 @@ def getDriversFare(phn):
             data = cur.fetchone()
 
             return jsonify(data)
+
+@app.route('/ApplyForJob', methods=['POST'])
+def ApplyForJob():
+    if request.method == 'POST':
+        conn = sql.connect("DriverInNeed")
+        cur = conn.cursor()
+        data = request.data
+        my_json = data.decode('utf8')
+        data1 = json.loads(my_json)
+        print(data1)
+        cphone=data1[0]
+        dphone=data1[1]
+        dfname=data1[2]
+        dlname=data1[3]
+        daddress=data1[4]
+        fare=data1[5]
+        service=data1[6]
+        val=(cphone,dphone,dfname,dlname,daddress,fare,service)
+        script=("INSERT into applied (CPhone,Dphone,DFname,DLname,DAddress,Fare,DriverService) VALUES (?,?,?,?,?,?,?) ")
+        cur.execute(script,val)
+        conn.commit()
+        return jsonify("done")
+
+@app.route('/LookForJobReq/<int:phn>', methods=['GET'])
+def LookForJobReq(phn):
+    if request.method == 'GET':
+        conn = sql.connect("DriverInNeed")
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM applied WHERE CPhone=? ", (phn,))
+        conn.commit()
+        data = cur.fetchall()
+
+        return jsonify(data)
+@app.route('/DeleteJobReq/<int:phn>', methods=['DELETE'])
+def DeleteJobReq(phn):
+    if request.method == 'DELETE':
+        conn = sql.connect("DriverInNeed")
+        cur = conn.cursor()
+        cur.execute("DELETE FROM applied WHERE CPhone=? ", (phn,))
+        conn.commit()
+
+
+        return jsonify("deleted")
+
 
 if __name__ == '__main__':
     app.run(debug=True)
